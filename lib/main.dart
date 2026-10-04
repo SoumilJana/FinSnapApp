@@ -210,10 +210,7 @@ class _IntentHandlerWrapperState extends State<IntentHandlerWrapper> {
       // Kick off background processing
       _processImageInBackground(newId, text);
 
-      // Automatically go back to the previous app after a short delay
-      Future.delayed(const Duration(milliseconds: 1500), () {
-        SystemNavigator.pop();
-      });
+      // Removed early pop: we now pop at the end of _processImageInBackground
     } catch (e) {
       _showError('Error: $e');
     } finally {
@@ -307,6 +304,11 @@ class _IntentHandlerWrapperState extends State<IntentHandlerWrapper> {
           ),
         );
       }
+    } finally {
+      // Automatically go back to the previous app after a short delay
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        SystemNavigator.pop();
+      });
     }
   }
 
