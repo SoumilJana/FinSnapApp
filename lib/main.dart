@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:flutter_onnx_ocr/flutter_onnx_ocr.dart';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -22,6 +22,17 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await FlutterOnnxOcr.initialize(
+      detectionModelPath: 'assets/models/ch_PP-OCRv3_det_infer.onnx',
+      recognitionModelPath: 'assets/models/ch_PP-OCRv3_rec_infer.onnx',
+      characterDictPath: 'assets/models/ch_ppocrv5_dict.txt',
+    );
+  } catch (e) {
+    print("Failed to initialize OCR: $e");
+  }
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const BudgetApp());
 }
@@ -86,17 +97,16 @@ class _IntentHandlerWrapperState extends State<IntentHandlerWrapper> {
 
     try {
       // 1. OCR Extract for quick offline details
-      final inputImage = InputImage.fromFilePath(imagePath);
-      final textRecognizer = TextRecognizer(
-        script: TextRecognitionScript.latin,
-      );
-      final recognizedText = await textRecognizer.processImage(inputImage);
-      textRecognizer.close();
-
-      String quickMerchant = 'Processing...';
-      double quickAmount = 0.0;
-
-      String text = recognizedText.text;
+      String text = '';
+        try {
+          final results = await FlutterOnnxOcr.recognizeFromFile(imagePath);
+          text = results.map((e) => e.text).join('\n');
+        } catch (e) {
+          print("OCR Error: $e");
+        }
+        
+        String quickMerchant = 'Processing...';
+        double quickAmount = 0.0;
       print("OCR TEXT: \n" + text + "\n===END OCR===");
       List<String> lines = text
           .split('\n')

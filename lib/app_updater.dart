@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:ota_update/ota_update.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppUpdater {
@@ -69,7 +70,7 @@ class AppUpdater {
               onPressed: () {
                 Navigator.pop(context);
                 final apkUrl = 'https://raw.githubusercontent.com/SoumilJana/FinSnapApp/main/releases/FinSnapApp-v$remoteVersion.apk';
-                _launchURL(apkUrl);
+                _executeOtaUpdate(apkUrl);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1E1E2C),
@@ -81,6 +82,22 @@ class AppUpdater {
         );
       },
     );
+  }
+
+  static void _executeOtaUpdate(String url) {
+    try {
+      OtaUpdate().execute(
+        url,
+        destinationFilename: 'FinSnapApp-update.apk',
+      ).listen(
+        (OtaEvent event) {
+          debugPrint('OTA status: ${event.status}, value: ${event.value}');
+        },
+      );
+    } catch (e) {
+      debugPrint('Failed to make OTA update. Details: $e');
+      _launchURL(url); // Fallback
+    }
   }
 
   static Future<void> _launchURL(String url) async {
