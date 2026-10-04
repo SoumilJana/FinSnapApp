@@ -13,12 +13,15 @@ REQUESTY_API_KEY = "YOUR_REQUESTY_API_KEY"
 PROMPT_TEMPLATE = """
 You are a transaction parser. Extract the transaction details directly from this payment screenshot.
 Return ONLY a raw JSON object with the following keys, with NO markdown formatting, NO backticks, and NO other text:
-- "merchant": (string) The name of the other party in the transaction. If money was spent, this is the recipient. If money was received (income), this is the SENDER. CRITICAL: "Soumil Jana" is the app owner. If the money is sent TO Soumil Jana, it is an INCOME transaction. Do not set the merchant to Soumil Jana.
-- "amount": (double) The numerical amount paid. (e.g. 150.0). CRITICAL: Extract the EXACT numerical amount you see. Do NOT guess or strip digits unless there is a clear space (e.g., '2 215' might be 215). If the OCR includes currency symbols like '¥ 215' or 'r215', ignore the symbol and output 215.0.
-- "date": (string) The date and time of the transaction strictly in YYYY-MM-DD HH:mm format (use 24-hour military time, no am/pm, no commas, just the exact format). Search carefully for ANY date in the OCR text (e.g., "September 14 at 10:27 AM", "14 Oct 2026", "14/10"). If the year is missing, assume the current year. If the time is missing, assume 12:00. DO NOT fallback to the current date unless absolutely no date string is found.
+- "merchant": (string) The other party in the transaction. If expense, who was paid (e.g. "AJOY GOSWAMI"). If income, who sent the money (e.g. "ASMIT GHOSH" or "Sukumar Jana"). CRITICAL: "Soumil Jana" is the app owner. Do NOT set merchant to Soumil Jana.
+- "amount": (double) The numerical amount. The OCR may format it like 'R1,000', '￥215', '¥ 215', '215', or just '240'/'150'. Strip out ALL letters, commas, and currency symbols (R, ￥, ¥, ). For example, 'R4,000' -> 4000.0, '215' -> 215.0, '9.5' -> 9.5.
+- "date": (string) The date and time strictly in YYYY-MM-DD HH:mm format (24-hour time). Examples in OCR: "0ctober 1 at 2:32 PM", "4 Oct 2026, 6:34am", "September 14 at 10:27 AM". (Note: OCR sometimes reads 'O' as '0' like '0ctober'). If the year is missing, assume the current year.
 - "category": (string) Categorize into: Groceries, Food/Dining, Transport, Utilities, Entertainment, Impulse/Useless, Transfer, Income, Other.
 - "isImpulse": (boolean) Set to true if it looks like an unnecessary impulse buy.
-- "isIncome": (boolean) Set to true ONLY if this is money received (credit). Set to false if it is money spent (debit) or paid. CRITICAL: If the money was sent TO "Soumil Jana" or says "Received from", this MUST be true! If it says "Paid to", "Sent to", or is a merchant payment, it MUST be false! If it is unclear, DEFAULT to false (expense).
+- "isIncome": (boolean) CRITICAL RULE: Set to true if this is money received (credit). Set to false if money spent (debit). 
+  * If the OCR contains "Payment Received", it is Income (true).
+  * If the OCR contains "Payment Successful" and "From: Soumil Jana", it is an Expense (false).
+  * If the OCR says "From [Someone]" and "To: Soumil Jana", it is Income (true).
 
 Here is the raw OCR text of the payment screenshot:
 ---
