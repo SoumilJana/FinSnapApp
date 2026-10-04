@@ -45,6 +45,20 @@ def extract_text_easyocr(image_path):
     except Exception as e:
         return f"[!] EasyOCR Failed: {e}"
 
+def extract_text_chandra(image_path):
+    try:
+        from chandra.model import InferenceManager
+        from chandra.input import load_file
+        
+        manager = InferenceManager(method="hf")
+        images = load_file(image_path)
+        results = manager.generate(images)
+        if results:
+            return results[0].markdown
+        return ""
+    except Exception as e:
+        return f"[!] Chandra OCR Failed: {e}"
+
 def parse_with_ai(ocr_text, model_name="gemma-4-31b-it"):
     print(f"\n[*] Sending to AI ({model_name}) for parsing...")
     prompt = PROMPT_TEMPLATE.replace("{ocr_text}", ocr_text)
@@ -93,6 +107,13 @@ if __name__ == "__main__":
     easy_text = extract_text_easyocr(image_path)
     print(easy_text.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
     
+    print("\n" + "=" * 50)
+    print("3. CHANDRA OCR OUTPUT")
+    print("=" * 50)
+    print("Loading Chandra OCR... (this may take a minute if downloading weights)")
+    chandra_text = extract_text_chandra(image_path)
+    print(chandra_text.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
+
     print("\n" + "=" * 50)
     print("We will now send the EasyOCR result to the AI, since it handles Rupees better.")
     print("=" * 50)
