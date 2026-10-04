@@ -4,7 +4,7 @@ FinSnap is a smart, AI-powered personal finance and budget tracking application 
 
 Using advanced on-device and cloud AI, FinSnap intelligently extracts the merchant, amount, date, and automatically categorizes your transactions in seconds.
 
-### 📱 [Download the latest APK here](https://raw.githubusercontent.com/SoumilJana/FinSnapApp/main/releases/FinSnapApp-v1.0.1.apk)
+### 📱 [Download the latest APK here](https://raw.githubusercontent.com/SoumilJana/FinSnapApp/main/releases/FinSnapApp-v1.0.2.apk)
 
 ## ✨ Features
 
