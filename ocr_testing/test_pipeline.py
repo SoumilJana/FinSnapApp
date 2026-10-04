@@ -14,8 +14,8 @@ PROMPT_TEMPLATE = """
 You are a transaction parser. Extract the transaction details directly from this payment screenshot.
 Return ONLY a raw JSON object with the following keys, with NO markdown formatting, NO backticks, and NO other text:
 - "merchant": (string) The name of the other party in the transaction. If money was spent, this is the recipient. If money was received (income), this is the SENDER. CRITICAL: "Soumil Jana" is the app owner. If the money is sent TO Soumil Jana, it is an INCOME transaction. Do not set the merchant to Soumil Jana.
-- "amount": (double) The numerical amount paid. (e.g. 150.0). CRITICAL: Extract the EXACT numerical amount you see. Do NOT guess or strip digits unless there is a clear space (e.g., '2 215' might be 215). If the OCR says 2215, output 2215.0. If it says 'r215', output 215.0.
-- "date": (string) The date and time of the transaction strictly in YYYY-MM-DD HH:mm format (use 24-hour military time, no am/pm, no commas, just the exact format). Search carefully for ANY date in the OCR text (e.g., "14 Oct 2026", "14/10", "4 Oct", "8:30 PM"). If the year is missing, assume the current year. If the time is missing, assume 12:00. DO NOT fallback to the current date unless absolutely no date string is found.
+- "amount": (double) The numerical amount paid. (e.g. 150.0). CRITICAL: Extract the EXACT numerical amount you see. Do NOT guess or strip digits unless there is a clear space (e.g., '2 215' might be 215). If the OCR includes currency symbols like '¥ 215' or 'r215', ignore the symbol and output 215.0.
+- "date": (string) The date and time of the transaction strictly in YYYY-MM-DD HH:mm format (use 24-hour military time, no am/pm, no commas, just the exact format). Search carefully for ANY date in the OCR text (e.g., "September 14 at 10:27 AM", "14 Oct 2026", "14/10"). If the year is missing, assume the current year. If the time is missing, assume 12:00. DO NOT fallback to the current date unless absolutely no date string is found.
 - "category": (string) Categorize into: Groceries, Food/Dining, Transport, Utilities, Entertainment, Impulse/Useless, Transfer, Income, Other.
 - "isImpulse": (boolean) Set to true if it looks like an unnecessary impulse buy.
 - "isIncome": (boolean) Set to true ONLY if this is money received (credit). Set to false if it is money spent (debit) or paid. CRITICAL: If the money was sent TO "Soumil Jana" or says "Received from", this MUST be true! If it says "Paid to", "Sent to", or is a merchant payment, it MUST be false! If it is unclear, DEFAULT to false (expense).
@@ -80,21 +80,18 @@ if __name__ == "__main__":
     image_path = sys.argv[1]
     print(f"[*] Analyzing: {image_path}\n")
     
-    print("=" * 50)
-    print("1. EASYOCR OUTPUT")
-    print("=" * 50)
-    easy_text = extract_text_easyocr(image_path)
-    print(easy_text.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
+    # Keeping EasyOCR in the background, hidden from output
+    # easy_text = extract_text_easyocr(image_path)
     
-    print("\n" + "=" * 50)
-    print("2. RAPIDOCR OUTPUT")
+    print("=" * 50)
+    print("RAPIDOCR OUTPUT")
     print("=" * 50)
     rapid_text = extract_text_rapidocr(image_path)
     print(rapid_text.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
 
     print("\n" + "=" * 50)
-    print("We will now send the EasyOCR result to the AI, since it handles Rupees better.")
+    print("We will now send the RapidOCR result to the AI.")
     print("=" * 50)
     
-    if easy_text and not easy_text.startswith("[!]"):
-        parse_with_ai(easy_text)
+    if rapid_text and not rapid_text.startswith("[!]"):
+        parse_with_ai(rapid_text)
