@@ -3,6 +3,10 @@ import sys
 import json
 import requests
 import easyocr
+import pytesseract
+from PIL import Image
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 if sys.stdout.encoding.lower() != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
@@ -25,24 +29,24 @@ Here is the raw OCR text of the payment screenshot:
 ---
 """
 
-def extract_text_from_image(image_path):
-    print(f"[*] Running EasyOCR on {image_path}...")
+def extract_text_tesseract(image_path):
+    try:
+        img = Image.open(image_path)
+        text = pytesseract.image_to_string(img, config='--psm 4')
+        return text.strip()
+    except Exception as e:
+        return f"[!] Tesseract Failed: {e}"
+
+def extract_text_easyocr(image_path):
     try:
         reader = easyocr.Reader(['en'])
         result = reader.readtext(image_path, detail=0)
-        text = "\n".join(result)
-        
-        print("[*] OCR Extraction Complete. Raw Text:")
-        print("-" * 40)
-        print(text.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
-        print("-" * 40)
-        return text
+        return "\n".join(result)
     except Exception as e:
-        print(f"[!] OCR Failed: {e}")
-        return None
+        return f"[!] EasyOCR Failed: {e}"
 
-def parse_with_ai(ocr_text):
-    print("[*] Sending to AI for parsing...")
+def parse_with_ai(ocr_text, model_name="gemma-4-31b-it"):
+    print(f"\n[*] Sending to AI ({model_name}) for parsing...")
     prompt = PROMPT_TEMPLATE.replace("{ocr_text}", ocr_text)
     
     headers = {
@@ -51,7 +55,7 @@ def parse_with_ai(ocr_text):
     }
     
     data = {
-        "model": "gemma-4-31b-it",
+        "model": model_name,
         "messages": [
             {"role": "user", "content": prompt}
         ]
@@ -75,6 +79,23 @@ if __name__ == "__main__":
         sys.exit(1)
         
     image_path = sys.argv[1]
-    ocr_text = extract_text_from_image(image_path)
-    if ocr_text:
-        parse_with_ai(ocr_text)
+    print(f"[*] Analyzing: {image_path}\n")
+    
+    print("=" * 50)
+    print("1. TESSERACT OCR OUTPUT")
+    print("=" * 50)
+    tess_text = extract_text_tesseract(image_path)
+    print(tess_text)
+    
+    print("\n" + "=" * 50)
+    print("2. EASYOCR OUTPUT")
+    print("=" * 50)
+    easy_text = extract_text_easyocr(image_path)
+    print(easy_text.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
+    
+    print("\n" + "=" * 50)
+    print("We will now send the EasyOCR result to the AI, since it handles Rupees better.")
+    print("=" * 50)
+    
+    if easy_text and not easy_text.startswith("[!]"):
+        parse_with_ai(easy_text)
