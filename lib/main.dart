@@ -12,6 +12,7 @@ import 'screens/main_screen.dart';
 import 'screens/review_screen.dart';
 
 import 'dart:io';
+import 'package:image/image.dart' as img;
 
 import 'repositories/transaction_repository.dart';
 import 'models/transaction_model.dart';
@@ -23,15 +24,7 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    await FlutterOnnxOcr.initialize(
-      detectionModelPath: 'assets/models/ch_PP-OCRv3_det_infer.onnx',
-      recognitionModelPath: 'assets/models/ch_PP-OCRv3_rec_infer.onnx',
-      characterDictPath: 'assets/models/ch_ppocrv5_dict.txt',
-    );
-  } catch (e) {
-    print("Failed to initialize OCR: $e");
-  }
+  
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const BudgetApp());
@@ -66,6 +59,21 @@ class IntentHandlerWrapper extends StatefulWidget {
 class _IntentHandlerWrapperState extends State<IntentHandlerWrapper> {
   late StreamSubscription _intentDataStreamSubscription;
   bool _isProcessing = false;
+  bool _isOcrInitialized = false;
+
+  Future<void> _ensureOcrInitialized() async {
+    if (_isOcrInitialized) return;
+    try {
+      await FlutterOnnxOcr.initialize(
+        detectionModelPath: 'assets/models/ch_PP-OCRv3_det_infer.onnx',
+        recognitionModelPath: 'assets/models/ch_PP-OCRv3_rec_infer.onnx',
+        characterDictPath: 'assets/models/ch_ppocrv5_dict.txt',
+      );
+      _isOcrInitialized = true;
+    } catch (e) {
+      print("Failed to initialize OCR: $e");
+    }
+  }
 
   @override
   void initState() {
@@ -96,11 +104,20 @@ class _IntentHandlerWrapperState extends State<IntentHandlerWrapper> {
     });
 
     try {
+      await _ensureOcrInitialized();
       // 1. OCR Extract for quick offline details
       String text = '';
         try {
-          final results = await FlutterOnnxOcr.recognizeFromFile(imagePath);
-          text = results.map((e) => e.text).join('\n');
+          final bytes = await File(imagePath).readAsBytes();
+          final image = img.decodeImage(bytes);
+          if (image != null) {
+            final resized = img.copyResize(image, width: 720); // Resize width to 720 to dramatically speed up OCR
+            final resizedBytes = img.encodeJpg(resized);
+            final results = await FlutterOnnxOcr.recognizeFromBytes(resizedBytes);
+            text = results.map((e) => e.text).join('\n');
+          } else {
+            throw Exception("Could not decode image");
+          }
         } catch (e) {
           print("OCR Error: $e");
         }
