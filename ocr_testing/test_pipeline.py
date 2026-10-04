@@ -7,7 +7,7 @@ from PIL import Image
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"
+REQUESTY_API_KEY = "YOUR_REQUESTY_API_KEY"
 
 PROMPT_TEMPLATE = """
 You are a transaction parser. Extract the transaction details directly from this payment screenshot.
@@ -29,6 +29,7 @@ def extract_text_from_image(image_path):
     print(f"[*] Running OCR on {image_path}...")
     try:
         img = Image.open(image_path)
+        # psm 4 = Assume a single column of text of variable sizes (crucial for finding amounts in receipts)
         text = pytesseract.image_to_string(img, config='--psm 4')
         print("[*] OCR Extraction Complete. Raw Text:")
         print("-" * 40)
@@ -44,26 +45,21 @@ def parse_with_ai(ocr_text):
     prompt = PROMPT_TEMPLATE.replace("{ocr_text}", ocr_text)
     
     headers = {
+        "Authorization": f"Bearer {REQUESTY_API_KEY}",
         "Content-Type": "application/json"
     }
     
     data = {
-        "contents": [
-            {
-                "parts": [
-                    {"text": prompt}
-                ]
-            }
+        "model": "gemma-4-31b-it",
+        "messages": [
+            {"role": "user", "content": prompt}
         ]
     }
     
-    # We found that Gemini 2.5 flash is active
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={GEMINI_API_KEY}"
-    response = requests.post(url, headers=headers, json=data)
-    
+    response = requests.post("https://router.requesty.ai/v1/chat/completions", headers=headers, json=data)
     if response.status_code == 200:
         result = response.json()
-        raw_output = result['candidates'][0]['content']['parts'][0]['text']
+        raw_output = result['choices'][0]['message']['content']
         print("[*] AI Parsing Complete. Output:")
         print("-" * 40)
         print(raw_output)
