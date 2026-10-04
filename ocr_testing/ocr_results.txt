@@ -1,0 +1,149 @@
+==================================================
+Results of expense1.png
+==================================================
+super
+money
+Payment Successful
+150
+0ctober 1 at 2:32 PM
+TO:AJOY GOSWAMI
+adriksona123@okhdfcbank
+Canara Bank
+From: Soumil Jana
+xxxxxx8110@superyes
+UPl reference ID:627401717852
+super.
+UPI
+VYESBANK
+money
+SUPER
+Get assured cashback on UPlspends
+
+==================================================
+Results of expense2.png
+==================================================
+super
+money
+Payment Successful
+19
+0ctober 1 at 4:59 PM
+TO: AAMAR KOLKATA METRO
+aamarkolkatametro.76509181@hdfcba...
+From: Soumil Jana
+xxxxxx8110@superyes
+UPl reference ID: 627403583062
+super.
+UP
+money
+/YESBANK
+GetassuredcashbackonUPlspends
+
+==================================================
+Results of expense3.png
+==================================================
+super
+money
+Payment Successful
+9.5
+September 29 at 5:16 PM
+TO: AAMAR KOLKATA METRO
+aamarkolkatametro.76509181@hdfcba...
+From: Soumil Jana
+xxxxxx8110@superyes
+UPlreferenceID:663875149050
+super.
+UP
+money
+/YESBANK
+GetassuredcashbackonUPlspends
+
+==================================================
+Results of income1.png
+==================================================
+super
+money
+Payment Received
+￥215
+September 14 at 10:27 AM
+To:
+xxxxxx8110@superyes
+SBIXXXXXX1575
+From: ASMIT GHOSH
+asmit.9218@waaxis
+UPlreference ID:662301516836
+super.
+UPI
+VYESBANK
+money
+SUPER
+Get assured cashback on UPlspends
+
+==================================================
+Results of income2.png
+==================================================
+super
+money
+Payment Received
+240
+0ctober 2 at 9:36 AM
+To:
+xxxxxx8110@superyes
+SBIXXXXXX1575
+FrOm: SAPTARSHI BAGCHI
+roni.bagchi-2@okaxis
+UPlreference 1D:664115535848
+super.
+UPI
+VYESBANK
+money
+SUPER
+Get assured cashback on UPlspends
+
+==================================================
+Results of income3.png
+==================================================
+From Sukumar Jana
++91......1467
+R4,000
+bubu
+Completed
+4 Oct 2026, 6:34am
+State Bank of India 1575
+UPl transaction ID
+130679976661
+To: Soumil Jana
+....na-1@oksbi on Google Pay
+From: SUKUMAR JANA (HDFC Bank)
+...na-1@okhdfcbank on Google Pay
+Google transaction ID
+CICAgPjKy-exVw
+Payments may take up to 3 working days to be
+reflected in your account
+POWERED BY
+UNIFIED PAYMENTS INTERFACE
+G Pay
+
+==================================================
+Results of income4.png
+==================================================
+From Sukumar Jana
++91......1467
+R1,000
+bubu
+Completed
+25 Sept 2026, 9:42am
+State Bank of India 1575
+UPl transaction ID
+626831248172
+To: Soumil Jana
+....na-1@oksbi on Google Pay
+From: SUKUMAR JANA (HDFC Bank)
+..jana@okaxis on Google Pay
+Google transaction ID
+CICAgPjc69gVWQ
+Payments may take up to 3 working days to be
+reflected in your account
+POWERED BY
+UNIFIED PAYMENTS INTERFACE
+G Pay
+
