@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "666400777649",
+    "project_id": "finsnap-3ba0c",
+    "storage_bucket": "finsnap-3ba0c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:666400777649:android:52570777b51fbaa84a0990",
+        "android_client_info": {
+          "package_name": "com.example.budget_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDT9_t-rQPuy9K6HHvuuwWyy4yBuuTDHcQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
