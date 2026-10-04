@@ -5,23 +5,26 @@ import 'package:http/http.dart' as http;
 
 class TransactionParser {
   // Replace this with your OpenRouter API Key
-  static const String _openRouterApiKey = 'REPLACE_WITH_YOUR_OPENROUTER_API_KEY';
+  static const String _openRouterApiKey = '<OPENROUTER_API_KEY_REMOVED>';
 
   // Replace this with your Gemini API Key (Required ONLY for PDF parsing)
-  static const String _geminiApiKey = 'REPLACE_WITH_YOUR_GEMINI_API_KEY';
+  static const String _geminiApiKey = 'YOUR_GEMINI_API_KEY_HERE';
       
-  static const String _requestyApiKey = 'REPLACE_WITH_YOUR_REQUESTY_API_KEY';
+  static const String _requestyApiKey = 'rqsty-YOUR_REQUESTY_API_KEY/JER0CK9GQIYj0mLZ/61T6NYUL+4DNvxss6rY1VMI8WuvHMR6m6mkqNHpuA6osDGs0o0JxwvyLI0HdhzyApr6K0/E3QyKdg2PMOPQw=';
 
     static Future<Map<String, dynamic>?> parseTransaction(String ocrText) async {
     final prompt = '''
 You are a transaction parser. Extract the transaction details directly from this payment screenshot.
 Return ONLY a raw JSON object with the following keys, with NO markdown formatting, NO backticks, and NO other text:
-- "merchant": (string) The name of the other party in the transaction. If money was spent, this is the recipient. If money was received (income), this is the SENDER. CRITICAL: "Soumil Jana" is the app owner. If the money is sent TO Soumil Jana, it is an INCOME transaction. Do not set the merchant to Soumil Jana.
-- "amount": (double) The numerical amount paid. (e.g. 150.0). CRITICAL: The OCR often misreads the Indian Rupee symbol (₹) as the number 7. If you see a leading 7 that acts as a currency symbol (e.g., 7400 instead of 400), STRIP THE LEADING 7. Output 400.0 instead of 7400.0!
-- "date": (string) The date and time of the transaction strictly in YYYY-MM-DD HH:mm format (use 24-hour military time, no am/pm, no commas, just the exact format). Search carefully for ANY date in the OCR text (e.g., "14 Oct 2026", "14/10", "4 Oct", "8:30 PM"). If the year is missing, assume the current year. If the time is missing, assume 12:00. DO NOT fallback to the current date unless absolutely no date string is found.
+- "merchant": (string) The other party in the transaction. If expense, who was paid (e.g. "AJOY GOSWAMI"). If income, who sent the money (e.g. "ASMIT GHOSH" or "Sukumar Jana"). CRITICAL: "Soumil Jana" is the app owner. Do NOT set merchant to Soumil Jana.
+- "amount": (double) The numerical amount. The OCR may format it like 'R1,000', 'Y215', '215', or just '240'/'150' with symbols. Strip out ALL letters, commas, and currency symbols. For example, 'R4,000' -> 4000.0, 'Y215' -> 215.0, '9.5' -> 9.5.
+- "date": (string) The date and time strictly in YYYY-MM-DD HH:mm format (24-hour time). Examples in OCR: "0ctober 1 at 2:32 PM", "4 Oct 2026, 6:34am", "September 14 at 10:27 AM". (Note: OCR sometimes reads 'O' as '0' like '0ctober'). If the year is missing, assume the current year.
 - "category": (string) Categorize into: Groceries, Food/Dining, Transport, Utilities, Entertainment, Impulse/Useless, Transfer, Income, Other.
 - "isImpulse": (boolean) Set to true if it looks like an unnecessary impulse buy.
-- "isIncome": (boolean) Set to true if this is money received (credit). Set to false if it is money spent (debit) or paid. CRITICAL: If the money was sent TO "Soumil Jana", this MUST be true!
+- "isIncome": (boolean) CRITICAL RULE: Set to true if this is money received (credit). Set to false if money spent (debit). 
+  * If the OCR contains "Payment Received", it is Income (true).
+  * If the OCR contains "Payment Successful" and "From: Soumil Jana", it is an Expense (false).
+  * If the OCR says "From [Someone]" and "To: Soumil Jana", it is Income (true).
 
 Note: The current date and time is ${DateTime.now().toString()}. If the screenshot specifies a date without a year (e.g. "16 Sep" or "Yesterday"), assume the current year. If no date is found, use the current date and time.
 
@@ -47,7 +50,7 @@ $ocrText
   static Future<Map<String, dynamic>?> parseTransactionFromImage(
     File imageFile,
   ) async {
-    if (_geminiApiKey == 'REPLACE_WITH_YOUR_GEMINI_API_KEY') {
+    if (_geminiApiKey == 'YOUR_GEMINI_API_KEY_HERE') {
       throw Exception("Gemini API key is not configured.");
     }
 
@@ -55,28 +58,27 @@ $ocrText
         '''
 You are a transaction parser. Extract the transaction details directly from this payment screenshot.
 Return ONLY a raw JSON object with the following keys, with NO markdown formatting, NO backticks, and NO other text:
-- "merchant": (string) The name of the other party in the transaction. If money was spent, this is the recipient. If money was received (income), this is the SENDER. CRITICAL: "Soumil Jana" is the app owner. If the money is sent TO Soumil Jana, it is an INCOME transaction. Do not set the merchant to Soumil Jana.
-- "amount": (double) The numerical amount. (e.g. 150.0). CRITICAL: The AI often misreads the Rupee symbol as the number 7. If you see a leading 7 that looks like a currency symbol (e.g. 7400 instead of 400), STRIP THE LEADING 7. Output 400.0 instead of 7400.0.
-- "date": (string) The date and time of the transaction strictly in YYYY-MM-DD HH:mm format (use 24-hour military time, no am/pm, no commas, just the exact format).
+- "merchant": (string) The other party in the transaction. If expense, who was paid (e.g. "AJOY GOSWAMI"). If income, who sent the money (e.g. "ASMIT GHOSH" or "Sukumar Jana"). CRITICAL: "Soumil Jana" is the app owner. Do NOT set merchant to Soumil Jana.
+- "amount": (double) The numerical amount. The OCR may format it like 'R1,000', 'Y215', '215', or just '240'/'150' with symbols. Strip out ALL letters, commas, and currency symbols. For example, 'R4,000' -> 4000.0, 'Y215' -> 215.0, '9.5' -> 9.5.
+- "date": (string) The date and time strictly in YYYY-MM-DD HH:mm format (24-hour time). Examples in OCR: "0ctober 1 at 2:32 PM", "4 Oct 2026, 6:34am", "September 14 at 10:27 AM". (Note: OCR sometimes reads 'O' as '0' like '0ctober'). If the year is missing, assume the current year.
 - "category": (string) Categorize into: Groceries, Food/Dining, Transport, Utilities, Entertainment, Impulse/Useless, Transfer, Income, Other.
 - "isImpulse": (boolean) Set to true if it looks like an unnecessary impulse buy.
-- "isIncome": (boolean) Set to true if this is money received (credit). Set to false if it is money spent (debit) or paid. CRITICAL: If the money was sent TO "Soumil Jana", this MUST be true!
+- "isIncome": (boolean) CRITICAL RULE: Set to true if this is money received (credit). Set to false if money spent (debit). 
+  * If the OCR contains "Payment Received", it is Income (true).
+  * If the OCR contains "Payment Successful" and "From: Soumil Jana", it is an Expense (false).
+  * If the OCR says "From [Someone]" and "To: Soumil Jana", it is Income (true).
 
 Note: The current date and time is ${DateTime.now().toString()}. If the screenshot specifies a date without a year (e.g. "16 Sep" or "Yesterday"), assume the current year. If no date is found, use the current date and time.
 
 Examples to help you understand different screenshots:
 
 EXAMPLE 1 (Spent Money on UPI / Food):
-If screenshot says "Paid to Swiggy", "₹350", "15 Sept 2026, 8:00 pm".
+If screenshot says "Paid to Swiggy", "350", "15 Sept 2026, 8:00 pm".
 You output: {"merchant": "Swiggy", "amount": 350.0, "date": "2026-09-15 20:00", "category": "Food/Dining", "isImpulse": false, "isIncome": false}
 
 EXAMPLE 2 (Received Money / Income):
-If screenshot says "From Sukumar Jana", "To: Soumil Jana", "₹1,000", "1 Sept 2026, 9:20 am". (Notice money is FROM Sukumar)
+If screenshot says "From Sukumar Jana", "To: Soumil Jana", "1,000", "1 Sept 2026, 9:20 am". (Notice money is FROM Sukumar)
 You output: {"merchant": "Sukumar Jana", "amount": 1000.0, "date": "2026-09-01 09:20", "category": "Income", "isImpulse": false, "isIncome": true}
-
-EXAMPLE 3 (Impulse Buy / Entertainment):
-If screenshot says "Paid to Steam Games", "₹1200", "10 Aug 2026, 1:15 pm".
-You output: {"merchant": "Steam Games", "amount": 1200.0, "date": "2026-08-10 13:15", "category": "Entertainment", "isImpulse": true, "isIncome": false}
 
 CRITICAL: DO NOT output "User Safety: safe". DO NOT output any text other than the JSON object. You are a JSON API.
 ''';
@@ -207,7 +209,7 @@ CRITICAL: DO NOT output "User Safety: safe". DO NOT output any text other than t
   static Future<List<Map<String, dynamic>>> parseBankStatement(
     File pdfFile,
   ) async {
-    if (_geminiApiKey == 'REPLACE_WITH_YOUR_GEMINI_API_KEY') {
+    if (_geminiApiKey == 'YOUR_GEMINI_API_KEY_HERE') {
       throw Exception("Gemini API key is not configured.");
     }
 
@@ -293,7 +295,7 @@ Note: The current date and time is ${DateTime.now().toString()}. If a date is mi
     List<Map<String, dynamic>> transactionsJson, {
     String feedbackContext = "",
   }) async {
-    if (_openRouterApiKey == 'REPLACE_WITH_YOUR_OPENROUTER_API_KEY') {
+    if (_openRouterApiKey == '<OPENROUTER_API_KEY_REMOVED>') {
       throw Exception("OpenRouter API key is not configured.");
     }
 
