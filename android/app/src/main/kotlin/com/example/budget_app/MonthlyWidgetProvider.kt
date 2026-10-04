@@ -1,10 +1,13 @@
 package com.example.budget_app
 
 import android.appwidget.AppWidgetManager
+import android.app.PendingIntent
+import android.content.Intent
 import android.content.Context
 import android.content.SharedPreferences
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetProvider
+import es.antonborri.home_widget.HomeWidgetLaunchIntent
 
 class MonthlyWidgetProvider : HomeWidgetProvider() {
     override fun onUpdate(
@@ -25,14 +28,21 @@ class MonthlyWidgetProvider : HomeWidgetProvider() {
                 setTextViewText(R.id.tv_budget_label, " $budgetLeftLabel")
                 setProgressBar(R.id.progress_bar, 100, budgetProgress, false)
                 
-                // Optional color based on over/under budget
                 if (budgetLeftLabel == "over") {
                     setTextColor(R.id.tv_budget_left, android.graphics.Color.parseColor("#F44336"))
                 } else {
                     setTextColor(R.id.tv_budget_left, android.graphics.Color.parseColor("#4CAF50"))
                 }
+                
+                // Add click listener to launch app
+                val pendingIntent = HomeWidgetLaunchIntent.getActivity(
+                    context,
+                    MainActivity::class.java
+                )
+                setOnClickPendingIntent(R.id.widget_root, pendingIntent)
             }
             appWidgetManager.updateAppWidget(widgetId, views)
         }
     }
 }
+
