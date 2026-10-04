@@ -3,10 +3,7 @@ import sys
 import json
 import requests
 import easyocr
-import pytesseract
-from PIL import Image
-
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+from rapidocr_onnxruntime import RapidOCR
 
 if sys.stdout.encoding.lower() != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
@@ -29,14 +26,6 @@ Here is the raw OCR text of the payment screenshot:
 ---
 """
 
-def extract_text_tesseract(image_path):
-    try:
-        img = Image.open(image_path)
-        text = pytesseract.image_to_string(img, config='--psm 4')
-        return text.strip()
-    except Exception as e:
-        return f"[!] Tesseract Failed: {e}"
-
 def extract_text_easyocr(image_path):
     try:
         reader = easyocr.Reader(['en'])
@@ -45,19 +34,15 @@ def extract_text_easyocr(image_path):
     except Exception as e:
         return f"[!] EasyOCR Failed: {e}"
 
-def extract_text_chandra(image_path):
+def extract_text_rapidocr(image_path):
     try:
-        from chandra.model import InferenceManager
-        from chandra.input import load_file
-        
-        manager = InferenceManager(method="hf")
-        images = load_file(image_path)
-        results = manager.generate(images)
-        if results:
-            return results[0].markdown
+        engine = RapidOCR()
+        result, _ = engine(image_path)
+        if result:
+            return "\n".join([res[1] for res in result])
         return ""
     except Exception as e:
-        return f"[!] Chandra OCR Failed: {e}"
+        return f"[!] RapidOCR Failed: {e}"
 
 def parse_with_ai(ocr_text, model_name="gemma-4-31b-it"):
     print(f"\n[*] Sending to AI ({model_name}) for parsing...")
@@ -96,23 +81,16 @@ if __name__ == "__main__":
     print(f"[*] Analyzing: {image_path}\n")
     
     print("=" * 50)
-    print("1. TESSERACT OCR OUTPUT")
-    print("=" * 50)
-    tess_text = extract_text_tesseract(image_path)
-    print(tess_text)
-    
-    print("\n" + "=" * 50)
-    print("2. EASYOCR OUTPUT")
+    print("1. EASYOCR OUTPUT")
     print("=" * 50)
     easy_text = extract_text_easyocr(image_path)
     print(easy_text.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
     
     print("\n" + "=" * 50)
-    print("3. CHANDRA OCR OUTPUT")
+    print("2. RAPIDOCR OUTPUT")
     print("=" * 50)
-    print("Loading Chandra OCR... (this may take a minute if downloading weights)")
-    chandra_text = extract_text_chandra(image_path)
-    print(chandra_text.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
+    rapid_text = extract_text_rapidocr(image_path)
+    print(rapid_text.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
 
     print("\n" + "=" * 50)
     print("We will now send the EasyOCR result to the AI, since it handles Rupees better.")
