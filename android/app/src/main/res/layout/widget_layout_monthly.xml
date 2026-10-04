@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent"
+    android:padding="8dp">
+
+    <!-- The circular progress bar -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:indeterminate="false"
+        android:max="100"
+        android:progress="50"
+        android:progressDrawable="@drawable/widget_circular_progress" />
+
+    <!-- Central text container -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Spent"
+            android:textColor="#9E9E9E"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_monthly_spent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="9,501"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:layout_marginTop="2dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="2dp">
+            
+            <TextView
+                android:id="@+id/tv_budget_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="499"
+                android:textColor="#E0E0E0"
+                android:textSize="14sp" />
+                
+            <TextView
+                android:id="@+id/tv_budget_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" left"
+                android:textColor="#9E9E9E"
+                android:textSize="14sp"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
