@@ -5,12 +5,9 @@ import requests
 import pytesseract
 from PIL import Image
 
-# IMPORTANT: You must install Tesseract-OCR on Windows for this to work.
-# Download from: https://github.com/UB-Mannheim/tesseract/wiki
-# And set the path below if it's not in your system PATH:
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-OPENROUTER_API_KEY = "<OPENROUTER_API_KEY_REMOVED>"
+REQUESTY_API_KEY = "YOUR_OPENROUTER_OR_REQUESTY_KEY_HERE"
 
 PROMPT_TEMPLATE = """
 You are a transaction parser. Extract the transaction details directly from this payment screenshot.
@@ -40,7 +37,6 @@ def extract_text_from_image(image_path):
         return text
     except Exception as e:
         print(f"[!] OCR Failed: {e}")
-        print("Make sure Tesseract is installed and the path is correct!")
         return None
 
 def parse_with_ai(ocr_text):
@@ -48,7 +44,7 @@ def parse_with_ai(ocr_text):
     prompt = PROMPT_TEMPLATE.replace("{ocr_text}", ocr_text)
     
     headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Authorization": f"Bearer {REQUESTY_API_KEY}",
         "Content-Type": "application/json"
     }
     
@@ -67,14 +63,6 @@ def parse_with_ai(ocr_text):
         print("-" * 40)
         print(raw_output)
         print("-" * 40)
-        
-        try:
-            parsed_json = json.loads(raw_output.strip('`').replace('json\n', ''))
-            print("[*] Valid JSON parsed successfully!")
-            return parsed_json
-        except Exception as e:
-            print(f"[!] Failed to parse output as JSON: {e}")
-            return None
     else:
         print(f"[!] API Request Failed: {response.text}")
         return None
