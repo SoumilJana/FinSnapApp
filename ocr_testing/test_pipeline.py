@@ -7,13 +7,13 @@ from PIL import Image
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-REQUESTY_API_KEY = "YOUR_REQUESTY_API_KEY"
+REQUESTY_API_KEY = "<REQUESTY_API_KEY_REMOVED>"
 
 PROMPT_TEMPLATE = """
 You are a transaction parser. Extract the transaction details directly from this payment screenshot.
 Return ONLY a raw JSON object with the following keys, with NO markdown formatting, NO backticks, and NO other text:
 - "merchant": (string) The name of the other party in the transaction. If money was spent, this is the recipient. If money was received (income), this is the SENDER. CRITICAL: "Soumil Jana" is the app owner. If the money is sent TO Soumil Jana, it is an INCOME transaction. Do not set the merchant to Soumil Jana.
-- "amount": (double) The numerical amount paid. (e.g. 150.0). CRITICAL: The OCR often misreads the Indian Rupee symbol (₹) as the number 7. If you see a leading 7 that acts as a currency symbol (e.g., 7400 instead of 400), STRIP THE LEADING 7. Output 400.0 instead of 7400.0!
+- "amount": (double) The numerical amount paid. (e.g. 150.0). CRITICAL: The OCR often misreads the Indian Rupee symbol (₹) as the number 7 or 2. If you see a leading 7 or 2 that acts as a currency symbol (e.g., 7400 instead of 400, or 2215 instead of 215), STRIP THE LEADING DIGIT! Output 215.0 instead of 2215.0! Use your common sense if the number looks suspiciously duplicated like 2215.
 - "date": (string) The date and time of the transaction strictly in YYYY-MM-DD HH:mm format (use 24-hour military time, no am/pm, no commas, just the exact format). Search carefully for ANY date in the OCR text (e.g., "14 Oct 2026", "14/10", "4 Oct", "8:30 PM"). If the year is missing, assume the current year. If the time is missing, assume 12:00. DO NOT fallback to the current date unless absolutely no date string is found.
 - "category": (string) Categorize into: Groceries, Food/Dining, Transport, Utilities, Entertainment, Impulse/Useless, Transfer, Income, Other.
 - "isImpulse": (boolean) Set to true if it looks like an unnecessary impulse buy.
