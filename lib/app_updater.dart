@@ -69,7 +69,7 @@ class AppUpdater {
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                final apkUrl = 'https://raw.githubusercontent.com/SoumilJana/FinSnapApp/main/releases/FinSnapApp-v$remoteVersion.apk';
+                final apkUrl = 'https://github.com/SoumilJana/FinSnapApp/raw/main/releases/FinSnapApp-v$remoteVersion.apk';
                 _executeOtaUpdate(apkUrl);
               },
               style: ElevatedButton.styleFrom(
