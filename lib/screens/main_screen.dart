@@ -4,6 +4,7 @@ import 'home_screen.dart';
 import 'ai_insights_screen.dart';
 import 'analytics_screen.dart';
 import 'ai_chat_screen.dart';
+import '../app_updater.dart';
 
 import '../repositories/transaction_repository.dart';
 
@@ -28,6 +29,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    AppUpdater.checkForUpdates(context);
     _repository.transactionsNotifier.addListener(_onDataChanged);
   }
 
