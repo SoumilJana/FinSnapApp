@@ -101,7 +101,7 @@ CRITICAL: DO NOT output "User Safety: safe". DO NOT output any text other than t
           'Authorization': 'Bearer $_requestyApiKey'
         },
         body: jsonEncode({
-          "model": "gemma-4-31b-it",
+          "model": "google/gemma-2-27b-it",
           "messages": [
             {
               "role": "user",
@@ -512,7 +512,7 @@ CRITICAL RULES:
           'Authorization': 'Bearer $_requestyApiKey'
         },
         body: jsonEncode({
-          "model": "gemma-4-31b-it",
+          "model": "google/gemma-2-27b-it",
           "messages": [
             {
               "role": "user",
