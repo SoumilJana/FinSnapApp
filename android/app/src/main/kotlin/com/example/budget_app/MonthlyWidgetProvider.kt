@@ -24,15 +24,9 @@ class MonthlyWidgetProvider : HomeWidgetProvider() {
                 val budgetProgress = widgetData.getInt("budgetProgress", 0)
                 
                 setTextViewText(R.id.tv_monthly_spent, monthlySpent)
-                setTextViewText(R.id.tv_budget_left, budgetLeft)
-                setTextViewText(R.id.tv_budget_label, " $budgetLeftLabel")
                 setProgressBar(R.id.progress_bar, 100, budgetProgress, false)
                 
-                if (budgetLeftLabel == "over") {
-                    setTextColor(R.id.tv_budget_left, android.graphics.Color.parseColor("#F44336"))
-                } else {
-                    setTextColor(R.id.tv_budget_left, android.graphics.Color.parseColor("#4CAF50"))
-                }
+
                 
                 // Add click listener to launch app
                 val pendingIntent = HomeWidgetLaunchIntent.getActivity(
