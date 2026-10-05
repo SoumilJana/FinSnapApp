@@ -6,7 +6,7 @@ import '../repositories/transaction_repository.dart';
 class AiChatService {
   final String apiKey = '<REQUESTY_API_KEY_REMOVED>';
   final String apiUrl = 'https://router.requesty.ai/v1/chat/completions';
-  final String modelName = 'gemma-4-31b-it';
+  final String modelName = 'google/gemma-4-31b-it';
   final TransactionRepository _repository = TransactionRepository();
   
   final List<Map<String, String>> _messages = [];

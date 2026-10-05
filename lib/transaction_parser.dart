@@ -7,10 +7,8 @@ class TransactionParser {
   // Replace this with your OpenRouter API Key
   static const String _openRouterApiKey = '<OPENROUTER_API_KEY_REMOVED>';
 
-  // Replace this with your Gemini API Key (Required ONLY for PDF parsing)
-  static const String _geminiApiKey = 'YOUR_GEMINI_API_KEY_HERE';
       
-  static const String _requestyApiKey = 'rqsty-YOUR_REQUESTY_API_KEY/JER0CK9GQIYj0mLZ/61T6NYUL+4DNvxss6rY1VMI8WuvHMR6m6mkqNHpuA6osDGs0o0JxwvyLI0HdhzyApr6K0/E3QyKdg2PMOPQw=';
+  static const String _requestyApiKey = '<REQUESTY_API_KEY_REMOVED>';
 
     static Future<Map<String, dynamic>?> parseTransaction(String ocrText) async {
     final prompt = '''
@@ -28,6 +26,24 @@ Return ONLY a raw JSON object with the following keys, with NO markdown formatti
   * If unsure, default to Expense (false).
 
 Note: The current date and time is ${DateTime.now().toString()}. If the screenshot specifies a date without a year (e.g. "16 Sep" or "Yesterday"), assume the current year. If no date is found, use the current date and time.
+
+Examples to help you understand different screenshots:
+
+EXAMPLE 1 (Spent Money on UPI / Food):
+If screenshot says "Paid to Swiggy", "350", "15 Sept 2026, 8:00 pm".
+You output: {"merchant": "Swiggy", "amount": 350.0, "date": "2026-09-15 20:00", "category": "Food/Dining", "isImpulse": false, "isIncome": false}
+
+EXAMPLE 2 (Received Money / Income):
+If screenshot says "From Sukumar Jana", "To: Soumil Jana", "1,000", "1 Sept 2026, 9:20 am". (Notice money is FROM Sukumar)
+You output: {"merchant": "Sukumar Jana", "amount": 1000.0, "date": "2026-09-01 09:20", "category": "Income", "isImpulse": false, "isIncome": true}
+
+EXAMPLE 3 (Expense with UPI ID):
+If OCR has "Payment Successful", "₹400", "October 2 at 9:37 AM", "To: VAIBHAV PANSARI", "vaibhavcool4805@okicici".
+You output: {"merchant": "Vaibhav Pansari", "amount": 400.0, "date": "2026-10-02 09:37", "category": "Other", "isImpulse": false, "isIncome": false}
+
+EXAMPLE 4 (Income with UPI ID):
+If OCR has "Payment Received", "₹240", "October 2 at 9:36 AM", "To: xxxxxx8110@superyes", "From: SAPTARSHI BAGCHI", "roni.bagchi-2@okaxis".
+You output: {"merchant": "Saptarshi Bagchi", "amount": 240.0, "date": "2026-10-02 09:36", "category": "Income", "isImpulse": false, "isIncome": true}
 
 Here is the raw OCR text of the payment screenshot:
 ---
@@ -51,9 +67,6 @@ $ocrText
   static Future<Map<String, dynamic>?> parseTransactionFromImage(
     File imageFile,
   ) async {
-    if (_geminiApiKey == 'YOUR_GEMINI_API_KEY_HERE') {
-      throw Exception("Gemini API key is not configured.");
-    }
 
     final prompt =
         '''
@@ -101,7 +114,7 @@ CRITICAL: DO NOT output "User Safety: safe". DO NOT output any text other than t
           'Authorization': 'Bearer $_requestyApiKey'
         },
         body: jsonEncode({
-          "model": "gemma-4-31b-it",
+          "model": "google/gemma-4-31b-it",
           "messages": [
             {
               "role": "user",
@@ -211,9 +224,6 @@ CRITICAL: DO NOT output "User Safety: safe". DO NOT output any text other than t
   static Future<List<Map<String, dynamic>>> parseBankStatement(
     File pdfFile,
   ) async {
-    if (_geminiApiKey == 'YOUR_GEMINI_API_KEY_HERE') {
-      throw Exception("Gemini API key is not configured.");
-    }
 
     final prompt =
         '''
@@ -233,64 +243,46 @@ Note: The current date and time is ${DateTime.now().toString()}. If a date is mi
     final bytes = await pdfFile.readAsBytes();
     final base64Pdf = base64Encode(bytes);
 
-    final modelsToTry = [
-      'gemini-3.1-flash-lite',
-      'gemini-3.0-flash',
-      'gemini-3-flash',
-      'gemma-3-27b-it',
-      'gemini-1.5-flash',
-      'gemini-1.5-pro',
-    ];
-    String lastError = "";
-
-    for (String modelName in modelsToTry) {
-      final url = Uri.parse(
-        'https://generativelanguage.googleapis.com/v1beta/models/$modelName:generateContent?key=$_geminiApiKey',
+    final url = Uri.parse('https://router.requesty.ai/v1/chat/completions');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_requestyApiKey'
+        },
+        body: jsonEncode({
+          "model": "google/gemma-4-31b-it",
+          "messages": [
+            {
+              "role": "user",
+              "content": [
+                {"type": "text", "text": prompt},
+                {
+                  "type": "image_url",
+                  "image_url": {
+                    "url": "data:application/pdf;base64,$base64Pdf"
+                  }
+                }
+              ]
+            }
+          ]
+        }),
       );
 
-      try {
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            "contents": [
-              {
-                "parts": [
-                  {
-                    "inlineData": {
-                      "mimeType": "application/pdf",
-                      "data": base64Pdf,
-                    },
-                  },
-                  {"text": prompt},
-                ],
-              },
-            ],
-            "generationConfig": {"responseMimeType": "application/json"},
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          final jsonResponse = jsonDecode(response.body);
-          String text =
-              jsonResponse['candidates'][0]['content']['parts'][0]['text'];
-          final List<dynamic> parsed = jsonDecode(text);
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        String responseText = jsonResponse['choices'][0]['message']['content'];
+        final jsonMatch = RegExp(r'\[[\s\S]*\]').firstMatch(responseText);
+        if (jsonMatch != null) {
+          final List<dynamic> parsed = jsonDecode(jsonMatch.group(0)!);
           return parsed.cast<Map<String, dynamic>>();
-        } else {
-          lastError =
-              "HTTP ${response.statusCode} for $modelName: ${response.body}";
-          print(lastError);
-          if (response.statusCode == 404 || response.statusCode == 503)
-            continue;
-          throw Exception(lastError);
         }
-      } catch (e) {
-        lastError = "API Error on $modelName: $e";
-        print(lastError);
       }
+    } catch (e) {
+      print("Requesty PDF Error: $e");
     }
-
-    throw Exception("All Gemini models failed. Last error: $lastError");
+    throw Exception("Requesty failed to parse PDF");
   }
 
   static Future<List<Map<String, dynamic>>> auditTransactions(
@@ -472,15 +464,22 @@ CRITICAL RULES:
       // Merchant extraction
       for (int i = 0; i < lines.length; i++) {
         final lowerLine = lines[i].toLowerCase();
-        if (lowerLine.startsWith('paid to') && i + 1 < lines.length) {
-          merchant = lines[i + 1];
-          break;
-        } else if (lowerLine.startsWith('to:') && i + 1 < lines.length) {
-          merchant = lines[i + 1];
-          break;
-        } else if (lowerLine.startsWith('from:') && i + 1 < lines.length) {
+        
+        if (isIncome && lowerLine.startsWith('from:')) {
           merchant = lines[i].substring(5).trim();
-          if (merchant.isEmpty) merchant = lines[i+1];
+          if (merchant.isEmpty && i + 1 < lines.length) merchant = lines[i+1];
+          break;
+        } else if (!isIncome && lowerLine.startsWith('paid to')) {
+          if (lowerLine.length > 7) {
+            merchant = lines[i].substring(7).trim();
+          }
+          if (merchant.isEmpty || merchant == "Unknown") {
+            if (i + 1 < lines.length) merchant = lines[i + 1];
+          }
+          break;
+        } else if (!isIncome && lowerLine.startsWith('to:')) {
+          merchant = lines[i].substring(3).trim();
+          if (merchant.isEmpty && i + 1 < lines.length) merchant = lines[i+1];
           break;
         }
       }
@@ -512,7 +511,7 @@ CRITICAL RULES:
           'Authorization': 'Bearer $_requestyApiKey'
         },
         body: jsonEncode({
-          "model": "gemma-4-31b-it",
+          "model": "google/gemma-4-31b-it",
           "messages": [
             {
               "role": "user",
