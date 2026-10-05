@@ -5,6 +5,7 @@
     android:targetCellWidth="2"
     android:targetCellHeight="2"
     android:updatePeriodMillis="86400000"
+    android:previewLayout="@layout/widget_layout_monthly"
     android:initialLayout="@layout/widget_layout_monthly"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

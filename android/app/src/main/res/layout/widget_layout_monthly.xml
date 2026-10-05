@@ -44,29 +44,6 @@
             android:textStyle="bold"
             android:layout_marginTop="2dp" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="2dp">
-            
-            <TextView
-                android:id="@+id/tv_budget_left"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="499"
-                android:textColor="#E0E0E0"
-                android:textSize="14sp" />
-                
-            <TextView
-                android:id="@+id/tv_budget_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=" left"
-                android:textColor="#9E9E9E"
-                android:textSize="14sp"
-                android:layout_marginStart="4dp" />
-        </LinearLayout>
+
     </LinearLayout>
 </RelativeLayout>
