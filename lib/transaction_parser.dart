@@ -433,31 +433,29 @@ CRITICAL RULES:
       }
 
       
-      // Basic amount extraction
-      final amountRegex = RegExp(r'(?:Rs\.?|INR|₹)?\s*(\d+(?:\.\d{1,2})?)', caseSensitive: false);
-      for (final line in lines) {
-        if (line.contains('₹') || line.toLowerCase().contains('rs')) {
-          final match = amountRegex.firstMatch(line);
-          if (match != null) {
-            amount = double.tryParse(match.group(1) ?? '0') ?? 0.0;
-            break;
+              // Better Amount Parsing
+        var amountMatch = RegExp(
+          r'(?:(?:^|\s)(?:rs\.?|inr|f|r|7)|,1|\?)\s?(\d+(?:,\d+)*(?:\.\d{1,2})?)',
+          caseSensitive: false,
+        ).firstMatch(text);
+        if (amountMatch != null) {
+          amount = double.tryParse(amountMatch.group(1)!.replaceAll(',', '')) ?? 0.0;
+        }
+        if (amount == 0.0) {
+          for (var line in lines) {
+            var match = RegExp(r'^[^\\d]*(\\d+(?:,\\d+)*(?:\\.\\d{1,2})?)\\s*\$').firstMatch(line);
+            if (match != null) {
+              amount = double.tryParse(match.group(1)!.replaceAll(',', '')) ?? 0.0;
+              break;
+            }
           }
         }
-      }
-      
-      // If amount is still 0, just look for any standalone number that looks like an amount
-      if (amount == 0.0) {
-        for (final line in lines) {
-           if (double.tryParse(line) != null) {
-             amount = double.parse(line);
-             break;
-           }
-        }
-      }
-
-      // Check if income
+        
+        // Check if income
       final lowerText = text.toLowerCase();
-      if (lowerText.contains('payment received') || lowerText.contains('received') || lowerText.contains('credited') || lowerText.contains('from:')) {
+      if (lowerText.contains('payment received') || lowerText.contains('money received') || lowerText.contains('credited')) {
+        isIncome = true;
+      } else if (lowerText.contains('from:') && lowerText.contains('to: soumil')) {
         isIncome = true;
       }
 
@@ -519,7 +517,7 @@ CRITICAL RULES:
             }
           ]
         }),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 30));
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         String text = jsonResponse['choices'][0]['message']['content'];
