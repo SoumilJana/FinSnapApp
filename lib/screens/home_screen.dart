@@ -2,6 +2,7 @@ import 'dart:io';
 import '../services/update_service.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import '../repositories/transaction_repository.dart';
@@ -10,6 +11,7 @@ import '../models/transaction_model.dart';
 import '../transaction_parser.dart';
 import 'transaction_edit_screen.dart';
 import 'analytics_screen.dart';
+import '../services/ai_insights_engine.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TransactionRepository _repository = TransactionRepository();
+  late final AiInsightsEngine _insightsEngine = AiInsightsEngine(_repository);
   String? _loadingMessage;
 
   @override
@@ -849,3 +852,4 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
   }
+

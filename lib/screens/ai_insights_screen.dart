@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/transaction_model.dart';
 import '../repositories/transaction_repository.dart';
@@ -255,7 +256,7 @@ class _AiInsightsScreenState extends State<AiInsightsScreen> {
               ),
               IconButton(
                 icon: const Icon(Icons.refresh, color: Colors.white70, size: 20),
-                onPressed: _fetchSmartSummary,
+                onPressed: () { HapticFeedback.lightImpact(); _fetchSmartSummary(); },
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
@@ -483,7 +484,7 @@ class _AiInsightsScreenState extends State<AiInsightsScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _runAudit,
+              onPressed: () { HapticFeedback.lightImpact(); _runAudit(); },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.indigo.shade700,
                 foregroundColor: Colors.white,
@@ -683,7 +684,7 @@ class _AiInsightsScreenState extends State<AiInsightsScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => _showRejectDialog(context, tx),
+                  onPressed: () { HapticFeedback.lightImpact(); _showRejectDialog(context, tx); },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.black54,
                     side: BorderSide(color: Colors.grey.shade300),
@@ -698,7 +699,7 @@ class _AiInsightsScreenState extends State<AiInsightsScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => _repository.acceptSuggestion(tx),
+                  onPressed: () { HapticFeedback.lightImpact(); _repository.acceptSuggestion(tx); },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1E1E2C),
                     foregroundColor: Colors.white,
@@ -720,3 +721,4 @@ class _AiInsightsScreenState extends State<AiInsightsScreen> {
     );
   }
 }
+
