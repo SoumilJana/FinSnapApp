@@ -4,14 +4,31 @@ import '../models/transaction_model.dart';
 import '../repositories/transaction_repository.dart';
 
 class AiChatService {
-  final String apiKey = '<REQUESTY_API_KEY_REMOVED>';
-  final String apiUrl = 'https://router.requesty.ai/v1/chat/completions';
-  final String modelName = 'google/gemma-4-31b-it';
+  // Requesty configuration (Currently Active)
+  final String requestyApiKey = '<REQUESTY_API_KEY_REMOVED>';
+  final String requestyApiUrl = 'https://router.requesty.ai/v1/chat/completions';
+  final String requestyModelName = 'google/gemma-4-31b-it';
+
+  // OpenRouter configuration (Kept as fallback just in case)
+  final String openRouterApiKey = '<OPENROUTER_API_KEY_REMOVED>';
+  final String openRouterApiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+  final String openRouterModelName = 'google/gemini-pro-1.5';
+
+  // Active configuration
+  late String apiKey;
+  late String apiUrl;
+  late String modelName;
+
   final TransactionRepository _repository = TransactionRepository();
   
   final List<Map<String, String>> _messages = [];
 
-  AiChatService();
+  AiChatService() {
+    // Connect to Requesty for now
+    apiKey = requestyApiKey;
+    apiUrl = requestyApiUrl;
+    modelName = requestyModelName;
+  }
 
   String _convertToCsv(List<TransactionModel> transactions) {
     if (transactions.isEmpty) return "No transactions found.";
@@ -90,6 +107,48 @@ Rules for your responses:
     } catch (e) {
       print("Unknown Error: $e");
       return "An unexpected error occurred. Please check your connection and try again.";
+    }
+  }
+
+  Future<String> generateSmartSummary(List<TransactionModel> transactions) async {
+    final String csvData = _convertToCsv(transactions);
+    final prompt = '''
+Analyze the following recent transactions and provide a short, single-paragraph financial summary (2-3 sentences max). 
+Highlight the biggest spending category or any worrying trends, and give one brief, actionable piece of advice.
+Pay special attention to the 'Note' column in the data, as it contains the user's specific context, specific items bought, or feelings about the purchase. Use these notes to make your summary highly personalized and specific.
+Keep it encouraging but realistic. DO NOT use markdown headers or lists. Just plain text.
+
+
+--- TRANSACTIONS ---
+$csvData
+--- END TRANSACTIONS ---
+''';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey'
+        },
+        body: jsonEncode({
+          "model": modelName,
+          "messages": [
+            {"role": "user", "content": prompt}
+          ],
+        })
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        return jsonResponse['choices'][0]['message']['content'].trim();
+      } else {
+        print("API Error: ${response.statusCode} - ${response.body}");
+        return "Unable to generate insights at this time.";
+      }
+    } catch (e) {
+      print("Unknown Error: $e");
+      return "Unable to generate insights due to a network error.";
     }
   }
 }
