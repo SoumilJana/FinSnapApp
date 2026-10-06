@@ -12,8 +12,16 @@ Using advanced on-device and cloud AI, FinSnap intelligently extracts the mercha
 *   **Intelligent Categorization**: AI automatically categorizes expenses (Groceries, Transport, Entertainment, etc.) and tags them with metadata like "Impulse Buy" or "Necessity".
 *   **Android Share Intent Integration**: You don't even need to open the app! Share a screenshot directly from your payment app to FinSnap, and it will process it in the background and pop you right back.
 *   **Smart Fallback**: If the AI takes longer than 10 seconds, the app falls back to a lightning-fast offline OCR parser so you are never left waiting.
-*   **Interactive Analytics**: View monthly breakdowns, spending trends, and categorize your cash flow seamlessly.
-*   **AI Financial CFO**: Chat with an AI assistant that analyzes your spending patterns, gives you personalized insights, and helps you optimize your budget.
+
+## 📱 App Pages & Navigation
+
+FinSnap consists of several core pages, each designed to give you complete control and visibility over your finances:
+
+*   **🏠 Home Page**: The main dashboard. Shows your total balance, recent transactions, daily income/expense overview, and quick action buttons to manually add or scan new transactions.
+*   **📊 Analytics Page**: Dive deep into your spending data. It features beautiful charts detailing your budget utilization, categorical breakdown (e.g., Food vs. Transport), Necessity vs. Discretionary splits, and month-over-month spending trends.
+*   **💡 AI Insights**: A proactive financial health dashboard. Features a personalized "Smart Summary" written by an LLM based on your recent activity, forecasts your end-of-month burn rate, tracks total "Impulse" purchases, and flags spending anomalies (e.g., sudden spikes in dining). It also houses the **AI Transaction Auditor** which reviews unclassified transactions and suggests fixes.
+*   **🤖 AI CFO (Chat)**: Your personal AI Chartered Accountant. It has direct context of all your transactions. You can ask it questions like "Where can I cut costs this month?" or "Did I spend too much on cabs last week?" and get precise, data-backed answers.
+*   **📝 Review & Edit**: Dedicated screens to review AI-parsed transactions, manually edit amounts/categories, and add custom notes to help the AI learn your specific spending habits for future audits.
 
 ## 🚀 Getting Started
 
