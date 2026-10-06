@@ -38,15 +38,24 @@ class _AiInsightsScreenState extends State<AiInsightsScreen> {
   }
 
   void _onDataChanged() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {});
+      if ((_smartSummary == null || _smartSummary == "No transactions found yet.") && _repository.transactionsNotifier.value.isNotEmpty && !_isLoadingSummary) {
+        _fetchSmartSummary();
+      }
+    }
   }
   
   Future<void> _fetchSmartSummary() async {
     if (_isLoadingSummary) return;
+    final txs = _repository.transactionsNotifier.value;
+    if (txs.isEmpty) {
+      if (mounted) setState(() { _smartSummary = "No transactions found yet."; });
+      return;
+    }
     setState(() => _isLoadingSummary = true);
     
     try {
-      final txs = _repository.transactionsNotifier.value;
       // Get recent transactions (e.g. last 30 days) to keep context small
       final now = DateTime.now();
       final recent = txs.where((t) {

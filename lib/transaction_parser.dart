@@ -289,104 +289,87 @@ Note: The current date and time is ${DateTime.now().toString()}. If a date is mi
     List<Map<String, dynamic>> transactionsJson, {
     String feedbackContext = "",
   }) async {
-    if (_openRouterApiKey == '<OPENROUTER_API_KEY_REMOVED>') {
-      throw Exception("OpenRouter API key is not configured.");
-    }
-
     final prompt = '''
 You are an AI Auditor for a personal finance app. 
-Review these transactions (specifically their notes or merchant names if note is missing) and identify cases where the current category is incorrect or could be more specific.
+Review these transactions (specifically their notes or merchant names if note is missing) and identify cases where 
+the current category is incorrect or could be more specific.
 $feedbackContext
 
 Input is a JSON array of transactions. 
 Return ONLY a raw JSON array of suggestion objects, matching the exact order and length of the input.
 Each returned object MUST have:
 - "id": (string) The exact transaction ID.
-- "shouldSuggestChange": (boolean) True if a change is highly recommended. False if the current category is correct or if there isn't enough confident information to change it.
-- "suggestedCategory": (string or null) The corrected category. MUST be one of: Groceries, Food/Dining, Transport, Utilities, Entertainment, Impulse/Useless, Transfer, Income, Other.
-- "suggestedSubcategory": (string or null) A more specific subcategory (e.g., "Football Turf", "Swiggy", "Fuel"). Keep it concise.
+- "shouldSuggestChange": (boolean) True if a change is highly recommended. False if the current category is correct 
+or if there isn't enough confident information to change it.
+- "suggestedCategory": (string or null) The corrected category. MUST be one of: Groceries, Food/Dining, Transport, 
+Utilities, Entertainment, Impulse/Useless, Transfer, Income, Other.
+- "suggestedSubcategory": (string or null) A more specific subcategory (e.g., "Football Turf", "Swiggy", "Fuel"). 
+Keep it concise.
 - "confidence": (number) Between 0.0 and 1.0 representing your confidence.
-- "reason": (string or null) A very short, specific reason for the change, based ONLY on the note or merchant. (e.g. "Merchant name Swiggy clearly belongs to Food/Dining.")
+- "reason": (string or null) A very short, specific reason for the change, based ONLY on the note or merchant. (e.g. 
+"Merchant name Swiggy clearly belongs to Food/Dining.")
 
 CRITICAL RULES:
 - Do NOT output any markdown formatting, backticks, or other text. Return ONLY the raw JSON array.
 - DO NOT invent information.
 - If the current category is already appropriate, return shouldSuggestChange: false.
-- Be conservative. Only suggest a change if you are confident (\u003e0.8).
+- Be conservative. Only suggest a change if you are confident (>0.8).
 ''';
 
-    final modelsToTry = [
-      'openrouter/free'
-    ];
-    String lastError = "";
+    final url = Uri.parse('https://router.requesty.ai/v1/chat/completions');
 
-    for (String modelName in modelsToTry) {
-      final url = Uri.parse('https://openrouter.ai/api/v1/chat/completions');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_requestyApiKey'
+        },
+        body: jsonEncode({
+          "model": "google/gemma-4-31b-it",
+          "messages": [
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": jsonEncode(transactionsJson)},
+          ]
+        }),
+      ).timeout(const Duration(seconds: 45));
 
-      try {
-        final response = await http.post(
-          url,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $_openRouterApiKey',
-            'HTTP-Referer': 'http://localhost',
-            'X-Title': 'FinSnap',
-          },
-          body: jsonEncode({
-            "model": modelName,
-            "messages": [
-              {"role": "system", "content": prompt},
-              {"role": "user", "content": jsonEncode(transactionsJson)},
-            ],
-            // Request JSON mode if supported
-            "response_format": {"type": "json_object"}
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          final jsonResponse = jsonDecode(response.body);
-          String text = jsonResponse['choices'][0]['message']['content'];
-          
-          // Robustly extract JSON array in case the model prepends text like "User Safety: safe"
-          int startIndex = text.indexOf('[');
-          int endIndex = text.lastIndexOf(']');
-          
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        String text = jsonResponse['choices'][0]['message']['content'];
+        
+        int startIndex = text.indexOf('[');
+        int endIndex = text.lastIndexOf(']');
+        
+        if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
+          text = text.substring(startIndex, endIndex + 1);
+        } else {
+          startIndex = text.indexOf('{');
+          endIndex = text.lastIndexOf('}');
           if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
             text = text.substring(startIndex, endIndex + 1);
-          } else {
-            // Try extracting an object if array brackets are missing
-            startIndex = text.indexOf('{');
-            endIndex = text.lastIndexOf('}');
-            if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
-              text = text.substring(startIndex, endIndex + 1);
-            }
           }
-
-          final decoded = jsonDecode(text);
-          List<dynamic> parsed;
-          if (decoded is List) {
-            parsed = decoded;
-          } else if (decoded is Map<String, dynamic> && decoded.containsKey('suggestions')) {
-            parsed = decoded['suggestions'] as List<dynamic>;
-          } else if (decoded is Map) {
-            parsed = [decoded];
-          } else {
-            parsed = [];
-          }
-
-          return parsed.cast<Map<String, dynamic>>();
-        } else {
-          lastError = "HTTP ${response.statusCode} for $modelName: ${response.body}";
-          if (response.statusCode == 404 || response.statusCode == 429 || response.statusCode == 503)
-            continue;
-          throw Exception(lastError);
         }
-      } catch (e) {
-        lastError = "API Error on $modelName: $e";
-      }
-    }
 
-    throw Exception("All OpenRouter free models failed. Last error: $lastError");
+        final decoded = jsonDecode(text);
+        List<dynamic> parsed;
+        if (decoded is List) {
+          parsed = decoded;
+        } else if (decoded is Map<String, dynamic> && decoded.containsKey('suggestions')) {
+          parsed = decoded['suggestions'] as List<dynamic>;
+        } else if (decoded is Map) {
+          parsed = [decoded];
+        } else {
+          parsed = [];
+        }
+
+        return parsed.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception("HTTP ${response.statusCode}: ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("API Error: $e");
+    }
   }
 
     static Map<String, dynamic>? _extractLocallyFromOcr(String text) {
