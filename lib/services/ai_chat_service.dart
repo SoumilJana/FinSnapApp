@@ -5,12 +5,12 @@ import '../repositories/transaction_repository.dart';
 
 class AiChatService {
   // Requesty configuration (Currently Active)
-  final String requestyApiKey = '<REQUESTY_API_KEY_REMOVED>';
+  final String requestyApiKey = '';
   final String requestyApiUrl = 'https://router.requesty.ai/v1/chat/completions';
   final String requestyModelName = 'google/gemma-4-31b-it';
 
   // OpenRouter configuration (Kept as fallback just in case)
-  final String openRouterApiKey = '<OPENROUTER_API_KEY_REMOVED>';
+  final String openRouterApiKey = '';
   final String openRouterApiUrl = 'https://openrouter.ai/api/v1/chat/completions';
   final String openRouterModelName = 'google/gemini-pro-1.5';
 
