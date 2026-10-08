@@ -5,10 +5,10 @@ import 'package:http/http.dart' as http;
 
 class TransactionParser {
   // Replace this with your OpenRouter API Key
-  static const String _openRouterApiKey = 'YOUR_OPENROUTER_API_KEY';
+  static const String _openRouterApiKey = '';
 
       
-  static const String _requestyApiKey = 'YOUR_REQUESTY_API_KEY';
+  static const String _requestyApiKey = '';
 
     static Future<Map<String, dynamic>?> parseTransaction(String ocrText) async {
     final prompt = '''
